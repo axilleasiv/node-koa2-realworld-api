@@ -1,36 +1,44 @@
 require('dotenv').config();
 const Koa = require('koa');
 const logger = require('koa-logger');
+const helmet = require('koa-helmet');
+const cors = require('@koa/cors');
+const bodyParser = require('koa-bodyparser');
+const serve = require('koa-static');
+const path = require('path');
+
 const router = require('./routes');
+const { errorHandler } = require('./middlewares');
+const { trackErrors } = require('./helpers');
+const { connectDb } = require('./models');
 
 const app = new Koa();
 
-app.use(logger());
+app.use(helmet());
 
-// error handling
-app.use(async (ctx, next) => {
-  try {
-    await next();
-  } catch (err) {
-    ctx.status = err.status || 500;
-    ctx.body = err.message;
-    ctx.app.emit('error', err, ctx);
-  }
+if (process.env.NODE_ENV !== 'production') {
+  app.use(logger());
+}
+
+connectDb().then(async () => {
+  // await createDummyData();
+  console.log('==> DB ready');
 });
 
-app.on('error', (err, ctx) => {
-  console.log(err);
-  /* centralized error handling:
-   *   console.log error
-   *   write error to log file
-   *   save error and request information to database if ctx.request match condition
-   *   ...
-   */
-});
+app.use(bodyParser());
+app.use(cors());
+
+app.use(serve(path.join(__dirname, './public')));
+
+app.use(errorHandler);
+trackErrors(app);
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-const server = app.listen(process.env.PORT);
+const port = process.env.PORT || 9999;
+const server = app.listen(port, () =>
+  console.log(`\nlistening on port: ${port}`)
+);
 
 module.exports = server;
