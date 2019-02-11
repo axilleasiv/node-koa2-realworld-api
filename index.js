@@ -11,6 +11,7 @@ const router = require('./routes');
 const { errorHandler } = require('./middlewares');
 const { trackErrors } = require('./helpers');
 const { connectDb } = require('./models');
+const passport = require('./config/passport');
 
 const app = new Koa();
 
@@ -27,6 +28,8 @@ connectDb().then(async () => {
 
 app.use(bodyParser());
 app.use(cors());
+
+app.use(passport.initialize());
 
 app.use(serve(path.join(__dirname, './public')));
 
