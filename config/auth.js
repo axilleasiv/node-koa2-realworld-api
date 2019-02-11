@@ -1,33 +1,10 @@
 const passport = require('koa-passport');
-// const jwt = require('express-jwt');
+const jwt = require('koa-jwt');
+
 const { jwtSecret } = require('./index');
 
-const authFacebook = passport.authenticate('facebook-token', {
-  session: false
-});
-const authGoogle = passport.authenticate('google-token', {
-  session: false
-});
-const authGithub = passport.authenticate('github-token', {
-  session: false
-  // successRedirect: '/accessed',
-  // failureRedirect: '/access',
-});
-const getTokenFromHeader = req => {
-  const headAuth = req.headers.authorization;
-
-  if (
-    (headAuth && headAuth.split(' ')[0] === 'Token') ||
-    (headAuth && headAuth.split(' ')[0] === 'Bearer')
-  ) {
-    return headAuth.split(' ')[1];
-  }
-
-  return null;
-};
-
-const authLocal = async (ctx, next) => {
-  return passport.authenticate('local', (err, user) => {
+const authenticate = strategy => async (ctx, next) => {
+  return passport.authenticate(strategy, (err, user) => {
     if (err) {
       return ctx.throw(500, err);
     }
@@ -42,23 +19,17 @@ const authLocal = async (ctx, next) => {
   })(ctx, next);
 };
 
-// const authJWT = {
-//   required: jwt({
-//     secret: jwtSecret,
-//     userProperty: 'payload',
-//     getToken: getTokenFromHeader
-//   }),
-//   optional: jwt({
-//     secret: jwtSecret,
-//     userProperty: 'payload',
-//     credentialsRequired: false,
-//     getToken: getTokenFromHeader
-//   })
-// };
+const authJWT = {
+  required: jwt({
+    secret: jwtSecret
+  }),
+  optional: jwt({
+    secret: jwtSecret,
+    passthrough: true
+  })
+};
 
 module.exports = {
-  authLocal,
-  authFacebook,
-  authGoogle,
-  authGithub
+  authenticate,
+  authJWT
 };
