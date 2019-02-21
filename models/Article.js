@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const slug = require('slug');
 
-const User = mongoose.model('User');
+const User = require('./User');
 
 const ArticleSchema = new mongoose.Schema(
   {
@@ -35,10 +35,12 @@ ArticleSchema.methods.slugify = function() {
     ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
 };
 
-ArticleSchema.methods.updateFavoriteCount = function() {
+// TODO:
+ArticleSchema.methods.updateFavoriteCount = function(MockUserModel) {
   const article = this;
+  const Model = MockUserModel || User;
 
-  return User.count({ favorites: { $in: [article._id] } }).then(function(
+  return Model.count({ favorites: { $in: [article._id] } }).then(function(
     count
   ) {
     article.favoritesCount = count;
