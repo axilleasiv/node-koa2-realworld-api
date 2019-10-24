@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema(
       email: {
         type: String,
         lowercase: true,
-        match: [/\S+@\S+\.\S+/, 'is invalid'],
+        // match: [/\S+@\S+\.\S+/, 'is invalid'],
         unique: true,
         sparse: true
       },
@@ -67,8 +67,8 @@ const UserSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      lowercase: true,
-      match: [/^[a-zA-Z0-9]+$/, 'is invalid']
+      lowercase: true
+      // match: [/^[a-zA-Z0-9]+$/, 'is invalid']
     },
     bio: String,
     image: String,
@@ -184,4 +184,4 @@ UserSchema.pre('remove', function(next) {
   this.model('Article').deleteMany({ author: this._id }, next);
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.models.User || mongoose.model('User', UserSchema);

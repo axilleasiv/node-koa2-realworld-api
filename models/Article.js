@@ -68,4 +68,5 @@ ArticleSchema.pre('remove', function(next) {
   this.model('Comment').deleteMany({ article: this._id }, next);
 });
 
-module.exports = mongoose.model('Article', ArticleSchema);
+module.exports =
+  mongoose.models.Article || mongoose.model('Article', ArticleSchema);
